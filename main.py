@@ -1215,7 +1215,8 @@ def save_user_message(user_id: str, user_input: str):
             )
             if resp.status_code not in (200, 201):
                 logger.error(f"Weaviate POST failed: {resp.status_code} {resp.text}")
-
+    except Exception as e:
+        logger.exception(f"Exception in save_user_message: {e}")
 
 def save_bot_response(bot_id: str, bot_response: str):
     logger.info(f"[save_bot_response] bot_id={bot_id}")
@@ -1245,17 +1246,15 @@ def save_bot_response(bot_id: str, bot_response: str):
             "encrypted_embedding": enc_embedding,
             "embedding_bucket": bucket
         }
-    try:
         with httpx.Client(timeout=10) as client:
             resp = client.post(
                 f"{WEAVIATE_ENDPOINT}/v1/objects",
-                json={"class": "InteractionHistory", "properties": obj, "vector": dummy_vector}
+                json={"class": "InteractionHistory", "properties": props, "vector": dummy_vector}
             )
             if resp.status_code not in (200, 201):
                 logger.error(f"Weaviate POST failed: {resp.status_code} {resp.text}")
     except Exception as e:
-        logger.exception(f"Exception in save_user_message: {e}"))
-
+        logger.exception(f"Exception in save_bot_response: {e}")
 # ---------- HF generator (single) ----------
 def load_hf_generator():
     tok = AutoTokenizer.from_pretrained(GPT_OSS_20B_PATH, use_fast=True, local_files_only=True)
